@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Afro Pâtissier — Master file with compulsory name/phone, delivery-only address, and red remove buttons in summary -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Afro Pâtissier | Bakery Delights</title>
+
+  <style>
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      line-height: 1.6;
+      background: #fffaf5;
+      color: #333;
+      scroll-behavior: smooth;
+    }
+
+    /* Header + Cart */
+    header {
+      background: #4a2c2a;
+      color: #fff;
+      padding: 1.5rem 1rem 2.5rem;
+      text-align: center;
+      position: relative;
+    }
+    header h1 { font-size: 2rem; letter-spacing: 0.5px; }
+    header p { opacity: 0.9; }
+
+    #cart-container {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    #cart {
+      background: #fff;
+      color: #4a2c2a;
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    #checkout-top {
+      padding: 0.4rem 0.8rem;
+      background: #f4d9c6;
+      color: #4a2c2a;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Sticky Tabs */
+    nav {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      display: flex;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      padding: 0.8rem;
+      border-bottom: 2px solid #eee;
+      z-index: 1000;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav::-webkit-scrollbar { display: none; }
+    nav a {
+      flex: 0 0 auto;
+      text-decoration: none;
+      color: #4a2c2a;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border-radius: 20px;
+      transition: background 0.25s, color 0.25s;
+      text-align: center;
+    }
+    nav a:hover { background: #f4d9c6; }
+    nav a.active { background: #4a2c2a; color: #fff; }
+
+    /* Sections */
+    section {
+      padding: 2rem 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    section h2 {
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+      color: #4a2c2a;
+      border-bottom: 2px solid #f4d9c6;
+      display: inline-block;
+      padding-bottom: 0.25rem;
+    }
+
+    /* Grid */
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    /* Product cards */
+    .product-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      opacity: 0;
+      transform: translateY(18px) scale(0.98);
+      will-change: transform, opacity;
+    }
+    .product-card:hover {
+      transform: translateY(-4px) scale(1.005);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    }
+    .product-card.revealed {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 450ms ease;
+    }
+    .product-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 0.8rem;
+      background: linear-gradient(135deg, #f4d9c6 0%, #fff 100%);
+    }
+    .product-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.4rem;
+      color: #4a2c2a;
+    }
+    .product-card p { font-size: 0.95rem; color: #555; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.6rem;
+      margin-top: 0.6rem;
+    }
+    .qty-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .qty-controls button {
+      padding: 0.35rem 0.75rem;
+      border: none;
+      background: #4a2c2a;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .qty-controls span {
+      min-width: 26px;
+      display: inline-block;
+      font-weight: 600;
+      color: #4a2c2a;
+    }
+    .add-btn {
+      padding: 0.45rem 0.85rem;
+      border: none;
+      background: #4a2c2a;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* Cake notes (conditional display) */
+    .cake-notes {
+      width: 100%;
+      margin-top: 0.2rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      resize: vertical;
+      display: none; /* only show when qty > 0 */
+    }
+    .cake-notes.show { display: block; }
+
+    /* Order summary (after the menu) */
+    #summary { margin-top: 0.5rem; }
+    .summary-box {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 1rem;
+    }
+    .summary-box h3 {
+      margin-bottom: 0.75rem;
+      color: #4a2c2a;
+      font-size: 1.2rem;
+    }
+    .summary-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed #eee;
+      gap: 0.6rem;
+      align-items: flex-start;
+    }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-note {
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    /* Remove button for summary items */
+    .remove-btn {
+      background: #d9534f;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .summary-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .summary-actions button {
+      padding: 0.55rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .whatsapp-btn { background: #25D366; color: #fff; }
+    .clear-btn { background: #f4d9c6; color: #4a2c2a; }
+
+    /* Fulfillment options (radio) */
+    .fulfillment {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .radio-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 0.6rem;
+    }
+    .meta-input {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #fff;
+    }
+    /* Address field hidden unless Delivery is selected */
+    #address { display: none; }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background: #eee;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 1024px) {
+      section { padding: 1.75rem 1rem; }
+      .product-card img { height: 190px; }
+    }
+    @media (max-width: 768px) {
+      header h1 { font-size: 1.8rem; }
+      .product-card img { height: 170px; }
+      nav { padding: 0.7rem; }
+    }
+    @media (max-width: 380px) {
+      .product-card img { height: 135px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <h1>Afro Pâtissier</h1>
+    <p>Freshly baked delights, crafted with love</p>
+    <div id="cart-container">
+      <div id="cart">🛒 <span id="cart-count">0</span></div>
+      <button id="checkout-top" onclick="scrollToSummary()">Checkout</button>
+    </div>
+  </header>
+
+  <!-- Sticky Category Tabs -->
+  <nav>
+    <a href="#cakes">Cakes</a>
+    <a href="#scones">Scones</a>
+    <a href="#biscuits">Biscuits</a>
+    <a href="#tarts">Tarts</a>
+    <a href="#muffins">Muffins</a>
+    <a href="#loaves">Loaves</a>
+    <a href="#summary">Order summary</a>
+  </nav>
+
+  <!-- Cakes -->
+  <section id="cakes">
+    <h2>Cakes</h2>
+    <div class="products">
+      <!-- Chocolate Cake -->
+      <div class="product-card">
+        <img src="images/cake-chocolate.jpg" alt="Chocolate Cake">
+        <h3>Chocolate Cake</h3>
+        <p>Rich, moist, and decadent. (Price coming soon)</p>
+
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Chocolate Cake', -1)">-</button>
+            <span id="Chocolate Cake-qty">0</span>
+            <button onclick="changeQty('Chocolate Cake', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Chocolate Cake')">Add to cart</button>
+        </div>
+
+        <textarea class="cake-notes" id="Chocolate Cake-notes" placeholder="Design/add-ons (e.g., drip, berries, message)"></textarea>
+      </div>
+
+      <!-- Vanilla Cake -->
+      <div class="product-card">
+        <img src="images/cake-vanilla.jpg" alt="Vanilla Cake">
+        <h3>Vanilla Cake</h3>
+        <p>Light, fluffy, and classic. (Price coming soon)</p>
+
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Vanilla Cake', -1)">-</button>
+            <span id="Vanilla Cake-qty">0</span>
+            <button onclick="changeQty('Vanilla Cake', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Vanilla Cake')">Add to cart</button>
+        </div>
+
+        <textarea class="cake-notes" id="Vanilla Cake-notes" placeholder="Design/add-ons (e.g., floral, buttercream art)"></textarea>
+      </div>
+
+      <!-- Red Velvet -->
+      <div class="product-card">
+        <img src="images/cake-redvelvet.jpg" alt="Red Velvet">
+        <h3>Red Velvet</h3>
+        <p>Velvety crumb with cream cheese frosting. (Price coming soon)</p>
+
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Red Velvet', -1)">-</button>
+            <span id="Red Velvet-qty">0</span>
+            <button onclick="changeQty('Red Velvet', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Red Velvet')">Add to cart</button>
+        </div>
+
+        <textarea class="cake-notes" id="Red Velvet-notes" placeholder="Design/add-ons (e.g., heart topper, themed colors)"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scones -->
+  <section id="scones">
+    <h2>Scones</h2>
+    <div class="products">
+      <div class="product-card">
+        <img src="images/scone-classic.jpg" alt="Classic Scone">
+        <h3>Classic Scone</h3>
+        <p>Perfect with tea or coffee. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Classic Scone', -1)">-</button>
+            <span id="Classic Scone-qty">0</span>
+            <button onclick="changeQty('Classic Scone', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Classic Scone')">Add to cart</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img src="images/scone-cheese.jpg" alt="Cheese Scone">
+        <h3>Cheese Scone</h3>
+        <p>Savory and tender. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Cheese Scone', -1)">-</button>
+            <span id="Cheese Scone-qty">0</span>
+            <button onclick="changeQty('Cheese Scone', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Cheese Scone')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Biscuits -->
+  <section id="biscuits">
+    <h2>Biscuits</h2>
+    <div class="products">
+      <div class="product-card">
+        <img src="images/biscuit-butter.jpg" alt="Butter Biscuits">
+        <h3>Butter Biscuits</h3>
+        <p>Golden, crisp, buttery. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Butter Biscuits', -1)">-</button>
+            <span id="Butter Biscuits-qty">0</span>
+            <button onclick="changeQty('Butter Biscuits', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Butter Biscuits')">Add to cart</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img src="images/biscuit-shortbread.jpg" alt="Shortbread">
+        <h3>Shortbread</h3>
+        <p>Melt-in-your-mouth classic. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Shortbread', -1)">-</button>
+            <span id="Shortbread-qty">0</span>
+            <button onclick="changeQty('Shortbread', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Shortbread')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tarts -->
+  <section id="tarts">
+    <h2>Tarts</h2>
+    <div class="products">
+      <div class="product-card">
+        <img src="images/tart-fruit.jpg" alt="Fruit Tart">
+        <h3>Fruit Tart</h3>
+        <p>Fresh fruits on cream base. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Fruit Tart', -1)">-</button>
+            <span id="Fruit Tart-qty">0</span>
+            <button onclick="changeQty('Fruit Tart', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Fruit Tart')">Add to cart</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img src="images/tart-lemon.jpg" alt="Lemon Tart">
+        <h3>Lemon Tart</h3>
+        <p>Zesty and smooth. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Lemon Tart', -1)">-</button>
+            <span id="Lemon Tart-qty">0</span>
+            <button onclick="changeQty('Lemon Tart', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Lemon Tart')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Muffins -->
+  <section id="muffins">
+    <h2>Muffins</h2>
+    <div class="products">
+      <div class="product-card">
+        <img src="images/muffin-blueberry.jpg" alt="Blueberry Muffin">
+        <h3>Blueberry Muffin</h3>
+        <p>Fluffy, bursting with berries. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Blueberry Muffin', -1)">-</button>
+            <span id="Blueberry Muffin-qty">0</span>
+            <button onclick="changeQty('Blueberry Muffin', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Blueberry Muffin')">Add to cart</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img src="images/muffin-chocolate.jpg" alt="Chocolate Muffin">
+        <h3>Chocolate Muffin</h3>
+        <p>Rich cocoa, tender crumb. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Chocolate Muffin', -1)">-</button>
+            <span id="Chocolate Muffin-qty">0</span>
+            <button onclick="changeQty('Chocolate Muffin', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Chocolate Muffin')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Loaves -->
+  <section id="loaves">
+    <h2>Loaves</h2>
+    <div class="products">
+      <div class="product-card">
+        <img src="images/loaf-banana.jpg" alt="Banana Loaf">
+        <h3>Banana Loaf</h3>
+        <p>Moist and flavorful. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Banana Loaf', -1)">-</button>
+            <span id="Banana Loaf-qty">0</span>
+            <button onclick="changeQty('Banana Loaf', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Banana Loaf')">Add to cart</button>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <img src="images/loaf-brioche.jpg" alt="Brioche Loaf">
+        <h3>Brioche Loaf</h3>
+        <p>Soft, buttery, rich. (Price coming soon)</p>
+        <div class="actions">
+          <div class="qty-controls">
+            <button onclick="changeQty('Brioche Loaf', -1)">-</button>
+            <span id="Brioche Loaf-qty">0</span>
+            <button onclick="changeQty('Brioche Loaf', 1)">+</button>
+          </div>
+          <button class="add-btn" onclick="addToCart('Brioche Loaf')">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order summary (after menu) -->
+  <section id="summary">
+    <h2>Order summary</h2>
+
+    <div class="summary-box">
+      <h3>Your items</h3>
+      <ul class="summary-list" id="summary-list">
+        <!-- populated via JS -->
+      </ul>
+
+      <div class="fulfillment">
+        <div class="radio-group">
+          <input type="radio" id="ful-collection" name="fulfillment" value="Collection" checked onchange="toggleAddress()">
+          <label for="ful-collection">Collection</label>
+        </div>
+        <div class="radio-group">
+          <input type="radio" id="ful-delivery" name="fulfillment" value="Delivery" onchange="toggleAddress()">
+          <label for="ful-delivery">Delivery</label>
+        </div>
+        <input class="meta-input" id="cust-name" type="text" placeholder="Your name" required>
+        <input class="meta-input" id="cust-phone" type="text" placeholder="Your phone" required>
+        <input class="meta-input" id="fulfillment-time" type="text" placeholder="Preferred date/time">
+        <input class="meta-input" id="address" type="text" placeholder="Delivery address">
+      </div>
+
+      <div class="summary-actions">
+        <button class="whatsapp-btn" onclick="checkout()">Order via WhatsApp</button>
+        <button class="clear-btn" onclick="clearCart()">Clear cart</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    created by DrMcGi
+  </footer>
+
+  <script>
+    // Cart model: { itemName: { qty: number, notes?: string } }
+    const cart = {};
+
+    // Helpers
+    function getQtyElId(item) { return item + "-qty"; }
+    function getNotesElId(item) { return item + "-notes"; }
+
+    // Ensure item exists in cart
+    function ensureItem(item) {
+      if (!cart[item]) cart[item] = { qty: 0 };
+    }
+
+    // Change quantity via +/- buttons
+    function changeQty(item, delta) {
+      ensureItem(item);
+      cart[item].qty = Math.max(0, cart[item].qty + delta);
+      updateItemUI(item);
+      refreshCartUI();
+    }
+
+    // Add to cart button (sets qty to at least 1 and updates)
+    function addToCart(item) {
+      ensureItem(item);
+      cart[item].qty = Math.max(1, cart[item].qty);
+      updateItemUI(item);
+      refreshCartUI();
+      flashSummary();
+    }
+
+    // Update item UI: qty text and cake notes visibility + storage
+    function updateItemUI(item) {
+      const qtyEl = document.getElementById(getQtyElId(item));
+      if (qtyEl) qtyEl.textContent = cart[item].qty;
+
+      const notesEl = document.getElementById(getNotesElId(item));
+      if (notesEl) {
+        if (cart[item].qty > 0) {
+          notesEl.classList.add("show");
+          const val = notesEl.value.trim();
+          if (val.length > 0) cart[item].notes = val; else delete cart[item].notes;
+        } else {
+          notesEl.classList.remove("show");
+          notesEl.value = "";
+          delete cart[item].notes;
+        }
+      }
+    }
+
+    // Live cart badge + summary list
+    function refreshCartUI() {
+      const total = Object.values(cart).reduce((sum, entry) => sum + (entry.qty || 0), 0);
+      document.getElementById("cart-count").textContent = total;
+
+      const list = document.getElementById("summary-list");
+      list.innerHTML = "";
+      const entries = Object.entries(cart).filter(([_, d]) => (d.qty || 0) > 0);
+
+      if (entries.length === 0) {
+        list.innerHTML = "<li class='summary-item'><em>Your cart is empty.</em></li>";
+      } else {
+        entries.forEach(([name, data]) => {
+          const li = document.createElement("li");
+          li.className = "summary-item";
+
+          const left = document.createElement("div");
+          left.innerHTML = `<strong>${escapeHtml(name)}</strong> x${data.qty}` + (data.notes ? `<div class='summary-note'>Notes: ${escapeHtml(data.notes)}</div>` : "");
+
+          const right = document.createElement("div");
+          const removeBtn = document.createElement("button");
+          removeBtn.className = "remove-btn";
+          removeBtn.textContent = "Remove";
+          removeBtn.onclick = () => removeItem(name);
+          right.appendChild(removeBtn);
+
+          li.appendChild(left);
+          li.appendChild(right);
+          list.appendChild(li);
+        });
+      }
+    }
+
+    // Remove item entirely (summary red remove button)
+    function removeItem(item) {
+      if (!cart[item]) return;
+      delete cart[item];
+      const qtyEl = document.getElementById(getQtyElId(item));
+      if (qtyEl) qtyEl.textContent = "0";
+      const notesEl = document.getElementById(getNotesElId(item));
+      if (notesEl) { notesEl.classList.remove("show"); notesEl.value = ""; }
+      refreshCartUI();
+    }
+
+    function clearCart() {
+      for (const key of Object.keys(cart)) delete cart[key];
+      document.querySelectorAll("[id$='-qty']").forEach(el => el.textContent = "0");
+      document.querySelectorAll(".cake-notes").forEach(el => { el.classList.remove("show"); el.value = ""; });
+      refreshCartUI();
+    }
+
+    // Fulfillment: toggle Delivery address visibility
+    function toggleAddress() {
+      const isDelivery = document.getElementById("ful-delivery").checked;
+      const addressEl = document.getElementById("address");
+      addressEl.style.display = isDelivery ? "block" : "none";
+    }
+
+    // Build WhatsApp message from cart + meta
+    function buildWhatsAppMessage() {
+      const entries = Object.entries(cart).filter(([_, d]) => (d.qty || 0) > 0);
+      if (entries.length === 0) return null;
+
+      const name = document.getElementById("cust-name").value.trim();
+      const phone = document.getElementById("cust-phone").value.trim();
+      const fulfillment = document.querySelector("input[name='fulfillment']:checked")?.value || "Collection";
+      const timePref = document.getElementById("fulfillment-time").value.trim();
+      const address = document.getElementById("address").value.trim();
+
+      // Compulsory validation
+      if (!name || !phone) {
+        alert("Please provide your name and phone number.");
+        return null;
+      }
+      if (fulfillment === "Delivery" && !address) {
+        alert("Please provide the delivery address.");
+        return null;
+      }
+
+      const lines = [];
+      lines.push("Hello Afro Pâtissier,");
+      lines.push(`Customer: ${name} | ${phone}`);
+      lines.push("I would like to order:");
+
+      entries.forEach(([itemName, data]) => {
+        const note = data.notes ? ` (Notes: ${data.notes})` : "";
+        lines.push(`- ${itemName} x${data.qty}${note}`);
+      });
+
+      lines.push("");
+      lines.push(`Fulfillment: ${fulfillment}${timePref ? " | " + timePref : ""}`);
+      if (fulfillment === "Delivery") lines.push(`Address: ${address}`);
+      lines.push("Thank you!");
+
+      return encodeURIComponent(lines.join("\n"));
+    }
+
+    function checkout() {
+      const text = buildWhatsAppMessage();
+      if (!text) return; // validation or empty cart handled in builder
+
+      const phone = "27736567014"; // +27 73 656 7014
+      const url = `https://wa.me/${phone}?text=${text}`;
+      window.open(url, "_blank");
+    }
+
+    function scrollToSummary() {
+      const el = document.getElementById("summary");
+      const y = el.getBoundingClientRect().top + window.pageYOffset - 80;
+      window.scrollTo({ top: y, behavior: "smooth" });
+      flashSummary();
+    }
+
+    function flashSummary() {
+      const box = document.querySelector(".summary-box");
+      if (!box) return;
+      const original = box.style.boxShadow;
+      box.style.boxShadow = "0 0 0 3px #25D366 inset";
+      setTimeout(() => { box.style.boxShadow = original || "0 2px 8px rgba(0,0,0,0.08)"; }, 800);
+    }
+
+    // Persist cake notes while typing (only applies if qty > 0; visibility handled elsewhere)
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains("cake-notes")) {
+        const item = e.target.id.replace("-notes", "");
+        ensureItem(item);
+        const val = e.target.value.trim();
+        if (cart[item].qty > 0) {
+          if (val.length > 0) cart[item].notes = val; else delete cart[item].notes;
+          refreshCartUI(); // reflect in summary immediately
+        }
+      }
+    });
+
+    // Reveal-on-scroll micro-animations
+    const cards = document.querySelectorAll(".product-card");
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("revealed");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { root: null, threshold: 0.15 });
+    cards.forEach(card => observer.observe(card));
+
+    // Active tab highlighting
+    const sections = document.querySelectorAll("section");
+    const navLinks = document.querySelectorAll("nav a");
+    function highlightActiveTab() {
+      let current = "";
+      const offset = 100;
+      sections.forEach(section => {
+        const top = section.offsetTop - offset;
+        const height = section.clientHeight;
+        if (window.pageYOffset >= top && window.pageYOffset < top + height) {
+          current = section.getAttribute("id");
+        }
+      });
+      navLinks.forEach(link => {
+        link.classList.toggle("active", link.getAttribute("href") === "#" + current);
+      });
+    }
+    window.addEventListener("scroll", highlightActiveTab);
+    window.addEventListener("load", () => { highlightActiveTab(); refreshCartUI(); toggleAddress(); });
+
+    // Smooth anchor alignment considering sticky nav
+    navLinks.forEach(link => {
+      link.addEventListener("click", (e) => {
+        const targetId = link.getAttribute("href").slice(1);
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          e.preventDefault();
+          const y = targetEl.getBoundingClientRect().top + window.pageYOffset - 80;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      });
+    });
+
+    // Utilities
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+  </script>
+</body>
+</html>
